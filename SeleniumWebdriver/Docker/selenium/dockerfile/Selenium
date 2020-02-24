@@ -1,0 +1,41 @@
+FROM docker-registry.default.svc:5000/cvm-microservices-prod/python:3.7.4
+
+#----------Versions---------------------------------------------------------------------
+
+ENV CHROMEDRIVER_VERSION 2.35
+
+#----------Download and Install common libraries & dependencies-------------------------
+
+RUN yum update -y
+RUN yum install -y dos2unix unzip openjdk-8-jre-headless xorg-x11-server-Xvfb xorg-x11-utils libXi-devel GConf2-devel
+
+#----------Download and Install Chrome--------------------------------------------------
+
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm 
+RUN yum localinstall -y google-chrome-stable_current_x86_64.rpm
+RUN rm google-chrome-stable_current_x86_64.rpm 
+
+#----------Set Chrome to developer mode-------------------------------------------------
+
+COPY chrome_edit.sh /
+RUN dos2unix /chrome_edit.sh && \
+    chmod +x /chrome_edit.sh
+RUN /chrome_edit.sh
+RUN rm /chrome_edit.sh
+
+#----------Download and Install ChromeDriver--------------------------------------------
+
+RUN wget -N https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip
+RUN unzip ./chromedriver_linux64.zip
+RUN rm ./chromedriver_linux64.zip && \
+    mv -f ./chromedriver /usr/local/bin/chromedriver && \
+    chown root:root /usr/local/bin/chromedriver && \
+    chmod 0755 /usr/local/bin/chromedriver
+
+#----------Install Selenium-------------------------------------------------------------
+
+RUN pip$PIP_VERSION install selenium
+
+#----------Clean up---------------------------------------------------------------------
+
+RUN yum remove -y unzip dos2unix

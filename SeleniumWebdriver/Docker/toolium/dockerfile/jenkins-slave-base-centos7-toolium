@@ -1,0 +1,7 @@
+FROM docker-registry.default.svc:5000/cvm-microservices-prod/selenium:latest
+
+#----------Copy and install python project requirements---------------------------------
+
+COPY requirements.txt /requirements.txt
+RUN pip$PIP_VERSION install -r /requirements.txt
+
